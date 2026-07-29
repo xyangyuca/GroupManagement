@@ -1,0 +1,4 @@
+"Name","ID","Result","Reason","GroupType"
+"SecAz-DCS-RSH-Filer-A420-Property-And-Casualty-Insurance-Corporate-Profile-Submitter-Approved-Users-RDEV","","Failed","Cannot bind argument to parameter 'GroupId' because it is an empty string.","Database"
+"SecAz-DCS-RSH-Partner-OSFI-Returns-Developer-Approved-Users-RDEV","66f6d320-4cca-4ef5-942f-94c7c2d3a4ba","Success","","Database"
+"SecAz-DCS-RSH-Partner-OSFI-Technical_Admin-Approved-Users-RDEV","5f7d1918-a451-45e3-99ac-1ef10898d49f","Failed","[Request_ResourceNotFound] : Resource '5f7d1918-a451-45e3-99ac-1ef10898d49f' does not exist or one of its queried reference-property objects are not present.","Database"

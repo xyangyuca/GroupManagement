@@ -1,0 +1,11 @@
+{
+    "FilerTemplates": [
+        "SG-DCS-Filer-Approved-LRAs-{Code}",
+        "SG-DCS-Filer-Requesting-Users-{Code}"
+    ],
+
+    "PartnerTemplates": [
+        "SG-DCS-Partner-{Code}-Approved-LRAs",
+        "SG-DCS-Partner-{Code}-Requesting-Users"
+    ]
+}

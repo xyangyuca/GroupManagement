@@ -1,0 +1,3 @@
+"Name","ID","Result","Reason","GroupType"
+"SecAz-DCS-RSH-Filer-A420-Property-And-Casualty-Insurance-Corporate-Profile-Submitter-Approved-Users-RDEV","","Failed","Cannot bind argument to parameter 'GroupId' because it is an empty string.","Database"
+"SecAz-DCS-RSH-Partner-OSFI-Technical_Admin-Approved-Users-RDEV","5f7d1918-a451-45e3-99ac-1ef10898d49f","Failed","Authentication needed. Please call Connect-MgGraph.","Database"
