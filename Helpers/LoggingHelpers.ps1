@@ -40,3 +40,23 @@ function Write-LogError {
 
     Write-Host "[$timestamp] [ERROR] $Message" -ForegroundColor Red
 }
+
+# ======================================================
+# SIMPLE LOGGING
+# ======================================================
+
+function Write-ExecutionLog {
+
+    param(
+        [string]$Message
+    )
+
+    $entry =
+        "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Message"
+
+    Write-Host $entry
+
+    Add-Content `
+        -Path $logFile `
+        -Value $entry
+}

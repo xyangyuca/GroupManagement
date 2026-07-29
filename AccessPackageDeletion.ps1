@@ -7,6 +7,10 @@ param(
     [bool]$Simulate = $true
 )
 
+# ==========================================
+# LOAD DEPENDENCIES
+# ==========================================
+
 Import-Module MSAL.PS
 Import-Module SqlServer
 
@@ -18,24 +22,15 @@ Import-Module SqlServer
 . "$PSScriptRoot\Common\Config.ps1"
 . "$PSScriptRoot\Common\SqlHelpers.ps1"
 
-
 # Existing helpers
 . "$PSScriptRoot\Helpers\LoggingHelpers.ps1"
 . "$PSScriptRoot\Core\GraphCore.ps1"
 
 . "$PSScriptRoot\Functions\Resolve-Template.ps1"
 . "$PSScriptRoot\Functions\Get-Catalog.ps1"
-
 . "$PSScriptRoot\Functions\Get-AccessPackageGroups.ps1"
 . "$PSScriptRoot\Functions\Get-AccessPackage.ps1"
-
-. "$PSScriptRoot\Functions\Get-CatalogGroupResource.ps1"
-. "$PSScriptRoot\Functions\Get-CatalogGroupMemberRole.ps1"
-
-. "$PSScriptRoot\Functions\Test-AccessPackageResourceAssignment.ps1"
-
-. "$PSScriptRoot\Functions\Add-AccessPackage.ps1"
-. "$PSScriptRoot\Functions\Ensure-AccessPackage.ps1"
+. "$PSScriptRoot\Functions\Ensure-AccessPackageDeleted.ps1"
 
 # ==========================================
 # CONFIGURATION
@@ -47,19 +42,18 @@ $config = Get-AppConfig
 # RUN ID
 # ==========================================
 
-$runId = "${Environment}_${PartnerFiler}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-
-
+$runId =
+    "${Environment}_${PartnerFiler}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
 # ==========================================
 # FOLDERS
 # ==========================================
 
-$logFolder = Join-Path $PSScriptRoot "Logs"
+$logFolder =
+    Join-Path $PSScriptRoot "Logs"
 
-$outputFolder = Join-Path $PSScriptRoot "Output"
-
-#$logFile = "$logFolder\AccessPackageManagement_$runId.log"
+$outputFolder =
+    Join-Path $PSScriptRoot "Output"
 
 #New-Item -Path $logFolder -ItemType Directory -Force | Out-Null
 #New-Item -Path $outputFolder -ItemType Directory -Force | Out-Null
@@ -68,42 +62,47 @@ $outputFolder = Join-Path $PSScriptRoot "Output"
 # FILES
 # ==========================================
 
-$logFile = Join-Path $logFolder "AccessPackageManagement_$runId.log"
+$logFile =
+    Join-Path $logFolder `
+        "AccessPackageDeletion_$runId.log"
 
-$outputFile = Join-Path $outputFolder "AccessPackageManagementResults_$runId.csv"
+$outputFile =
+    Join-Path $outputFolder `
+        "AccessPackageDeletionResults_$runId.csv"
 
-# ==========================================
+# ======================================================
 # RESULTS
-# ==========================================
+# ======================================================
 
-$results = [System.Collections.Generic.List[Object]]::new()
+$results =
+    [System.Collections.Generic.List[Object]]::new()
 
-# ==========================================
-# CONNECT GRAPH
-# ==========================================
+# ======================================================
+# GRAPH
+# ======================================================
 
-Connect-GraphSessionSecret $config.tenantId $config.clientId $config.secrectValue
+Connect-GraphSessionSecret `
+    $config.tenantId `
+    $config.clientId `
+    $config.secrectValue
 
 try {
 
-    Write-Log -Message "Starting Access Package Management." -Level Info
+    Write-ExecutionLog "Starting Access Package Deletion"
 
-    # ==========================================
+    # ==================================================
     # RESOLVE CATALOG
-    # ==========================================
+    # ==================================================
 
-    try {
+    $catalog =
+        Get-Catalog `
+            -Environment $Environment `
+            -PartnerFiler $PartnerFiler `
+            -Config $config
 
-        $catalog = Get-Catalog -Environment $Environment -PartnerFiler $PartnerFiler -Config $config
+    if (-not $catalog) {
 
-        Write-Log -Message "Catalog Found: $($catalog.DisplayName)" -Level Info
-    }
-    catch {
-
-        $message =
-        "Catalog lookup failed. Environment=$Environment PartnerFiler=$PartnerFiler Error=$($_.Exception.Message)"
-
-        Write-Log -Message $message
+        Write-ExecutionLog "Catalog not found. Exiting."
 
         $results.Add(
             [PSCustomObject]@{
@@ -115,19 +114,25 @@ try {
                 EntraGroupObjectId = ""
                 Action             = "Failed"
                 Status             = "Failed"
-                Message            = $message
+                Message            = "Catalog not found"
                 AccessPackageId    = ""
             }
         )
 
-        $results | Export-Csv -Path $outputFile -NoTypeInformation -Encoding UTF8
+        $results |
+            Export-Csv `
+                -Path $outputFile `
+                -NoTypeInformation `
+                -Encoding UTF8
 
         return
     }
 
-    # ==========================================
+    Write-ExecutionLog "Catalog Found: $($catalog.DisplayName)"
+
+    # ==================================================
     # GET SOURCE DATA
-    # ==========================================
+    # ==================================================
 
     $groups =
         Get-AccessPackageGroups `
@@ -135,15 +140,11 @@ try {
             -PartnerFiler $PartnerFiler `
             -Config $config
 
-    Write-Log -Message "Groups Retrieved: $($groups.Count)"
+    Write-ExecutionLog "Groups Retrieved: $($groups.Count)"
 
     foreach ($row in $groups) {
 
         try {
-
-            # ==========================================
-            # RESOLVE ACCESS PACKAGE NAME
-            # ==========================================
 
             $tokens = @{
                 Environment  = $Environment
@@ -157,55 +158,24 @@ try {
                     -Template $config.AccessPackages.DisplayNameTemplate `
                     -Tokens $tokens
 
-            $accessPackageDescription =
-                Resolve-Template `
-                    -Template $config.AccessPackages.DescriptionTemplate `
-                    -Tokens $tokens
+            Write-ExecutionLog "Processing $accessPackageName"
 
-            Write-Log -Message "Processing: $accessPackageName"
-
-            # ==========================================
-            # CREATE / GET ACCESS PACKAGE
-            # ==========================================
-
-            $result = Ensure-AccessPackage `
-                    -Row $row `
-                    -Catalog $catalog `
+            $result =
+                Ensure-AccessPackageDeleted `
                     -DisplayName $accessPackageName `
-                    -Description $accessPackageDescription `
                     -Simulate $Simulate
-
-            #if ($result.PolicyEligible) {
-             #   Ensure-AccessPackagePolicy `
-             #   -AccessPackageId $result.AccessPackageId `
-             #   -Row $row
-            #}
-
-            # ==========================================
-            # OUTPUT RECORD
-            # ==========================================
 
             $results.Add(
                 [PSCustomObject]@{
-
                     AccessPackageName  = $accessPackageName
-
                     CatalogName        = $catalog.DisplayName
-
                     Organization       = $row.Organization
-
                     Group              = $row.Group
-
                     FullGroupName      = $row.FullGroupName
-
                     EntraGroupObjectId = $row.EntraGroupObjectId
-
                     Action             = $result.Action
-
                     Status             = $result.Status
-
                     Message            = $result.Message
-
                     AccessPackageId    = $result.AccessPackageId
                 }
             )
@@ -215,34 +185,24 @@ try {
 
             $results.Add(
                 [PSCustomObject]@{
-
                     AccessPackageName  = $accessPackageName
-
                     CatalogName        = $catalog.DisplayName
-
                     Organization       = $row.Organization
-
                     Group              = $row.Group
-
                     FullGroupName      = $row.FullGroupName
-
                     EntraGroupObjectId = $row.EntraGroupObjectId
-
                     Action             = "Failed"
-
                     Status             = "Failed"
-
                     Message            = $_.Exception.Message
-
                     AccessPackageId    = ""
                 }
             )
         }
     }
 
-    # ==========================================
-    # EXPORT OUTPUT
-    # ==========================================
+    # ==================================================
+    # EXPORT CSV
+    # ==================================================
 
     $results |
         Export-Csv `
@@ -250,13 +210,15 @@ try {
             -NoTypeInformation `
             -Encoding UTF8
 
-    # ==========================================
-    # SUMMARY
-    # ==========================================
+    Write-ExecutionLog "Results exported to $outputFile"
 
-    $added =
+    # ==================================================
+    # SUMMARY
+    # ==================================================
+
+    $deleted =
         ($results |
-            Where-Object Action -eq "Added").Count
+            Where-Object Action -eq "Deleted").Count
 
     $skipped =
         ($results |
@@ -270,18 +232,17 @@ try {
         ($results |
             Where-Object Action -eq "Simulated").Count
 
-    Write-Host ""
-    Write-Host "===================================="
-    Write-Host "Access Package Management Summary"
-    Write-Host "===================================="
-    Write-Host "Added:     $added"
-    Write-Host "Skipped:   $skipped"
-    Write-Host "Failed:    $failed"
-    Write-Host "Simulated: $simulated"
-    Write-Host ""
-    Write-Host "Output: $outputFile"
+    Write-ExecutionLog ""
+    Write-ExecutionLog "Access Package Deletion Summary"
+    Write-ExecutionLog "Deleted:   $deleted"
+    Write-ExecutionLog "Skipped:   $skipped"
+    Write-ExecutionLog "Failed:    $failed"
+    Write-ExecutionLog "Simulated: $simulated"
+    Write-ExecutionLog "Output File: $outputFile"
 }
 finally {
 
     Disconnect-MgGraph
+
+    Write-ExecutionLog "Disconnected from Graph"
 }
