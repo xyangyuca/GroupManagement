@@ -18,9 +18,10 @@ Import-Module SqlServer
 . "$PSScriptRoot\Common\Config.ps1"
 . "$PSScriptRoot\Common\SqlHelpers.ps1"
 
+
 # Existing helpers
 . "$PSScriptRoot\Helpers\LoggingHelpers.ps1"
-. "$PSScriptRoot\..\Core\GraphCore.ps1"
+. "$PSScriptRoot\Core\GraphCore.ps1"
 
 . "$PSScriptRoot\Functions\Resolve-Template.ps1"
 . "$PSScriptRoot\Functions\Get-Catalog.ps1"
@@ -81,7 +82,7 @@ $results = [System.Collections.Generic.List[Object]]::new()
 # CONNECT GRAPH
 # ==========================================
 
-Connect-GraphSessionSecret $config.tenantId $config.clientId $config.secretValue
+Connect-GraphSessionSecret $config.tenantId $config.clientId $config.secrectValue
 
 try {
 
@@ -174,11 +175,11 @@ try {
                     -Description $accessPackageDescription `
                     -Simulate $Simulate
 
-            if ($result.PolicyEligible) {
-                Ensure-AccessPackagePolicy `
-                -AccessPackageId $result.AccessPackageId `
-                -Row $row
-            }
+            #if ($result.PolicyEligible) {
+             #   Ensure-AccessPackagePolicy `
+             #   -AccessPackageId $result.AccessPackageId `
+             #   -Row $row
+            #}
 
             # ==========================================
             # OUTPUT RECORD
