@@ -28,9 +28,12 @@ Import-Module SqlServer
 
 . "$PSScriptRoot\Functions\Resolve-Template.ps1"
 . "$PSScriptRoot\Functions\Get-Catalog.ps1"
+. "$PSScriptRoot\Functions\Get-AccessPackagePolicies.ps1"
 . "$PSScriptRoot\Functions\Get-AccessPackageGroups.ps1"
 . "$PSScriptRoot\Functions\Get-AccessPackage.ps1"
 . "$PSScriptRoot\Functions\Ensure-AccessPackageDeleted.ps1"
+
+
 
 # ==========================================
 # CONFIGURATION
