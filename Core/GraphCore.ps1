@@ -43,11 +43,15 @@ function Connect-GraphSessionSecret {
             $ClientId,
             $secureSecret
         )
-
+try {
     Connect-MgGraph `
         -TenantId $TenantId `
         -ClientSecretCredential $credential `
         -NoWelcome
 
     Write-Host "Connected to Microsoft Graph"
+	}
+	catch {
+	Write-HOst "Failed to connect to Microsoft Graph. $($_.Exception.Message)"
+	}
 }
