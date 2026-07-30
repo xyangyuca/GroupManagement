@@ -19,9 +19,7 @@ function Ensure-AccessPackageDeleted {
         }
     }
 
-    $policies =
-        Get-AccessPackagePolicies `
-            -AccessPackageId $existingPackage.Id
+    $policies = Get-AccessPackagePolicies -AccessPackageId $existingPackage.Id
 
     if ($policies.Count -gt 0) {
 

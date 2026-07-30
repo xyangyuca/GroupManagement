@@ -37,6 +37,14 @@ Import-Module SqlServer
 . "$PSScriptRoot\Functions\Add-AccessPackage.ps1"
 . "$PSScriptRoot\Functions\Ensure-AccessPackage.ps1"
 
+. "$PSScriptRoot\Functions\Get-AccessPackagePolicy.ps1"
+. "$PSScriptRoot\Functions\Get-RequestorGroup.ps1"
+. "$PSScriptRoot\Functions\Get-ApproverGroup.ps1"
+. "$PSScriptRoot\Functions\New-AccessPackagePolicyDefinition.ps1"
+. "$PSScriptRoot\Functions\Add-AccessPackagePolicy.ps1"
+. "$PSScriptRoot\Functions\Update-AccessPackagePolicy.ps1"
+. "$PSScriptRoot\Functions\Ensure-AccessPackagePolicy.ps1"
+
 # ==========================================
 # CONFIGURATION
 # ==========================================
@@ -175,11 +183,20 @@ try {
                     -Description $accessPackageDescription `
                     -Simulate $Simulate
 
-            #if ($result.PolicyEligible) {
-             #   Ensure-AccessPackagePolicy `
-             #   -AccessPackageId $result.AccessPackageId `
-             #   -Row $row
-            #}
+            $policyResult = $null
+
+            if ($result.PolicyEligible) {
+
+            $policyResult =
+                    Ensure-AccessPackagePolicy `
+                    -AccessPackageId $result.AccessPackageId `
+                    -AccessPackageName $accessPackageName `
+                    -Row $row `
+                    -Config $config `
+                    -Environment $Environment `
+                    -PartnerFiler $PartnerFiler `
+                    -Simulate $Simulate
+}
 
             # ==========================================
             # OUTPUT RECORD
@@ -207,6 +224,14 @@ try {
                     Message            = $result.Message
 
                     AccessPackageId    = $result.AccessPackageId
+
+                    PolicyAction = $policyResult.Action
+
+                    PolicyStatus = $policyResult.Status
+
+                    PolicyMessage = $policyResult.Message
+                    
+                    PolicyId = $policyResult.PolicyId
                 }
             )
 
