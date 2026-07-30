@@ -37,6 +37,7 @@ Import-Module SqlServer
 . "$PSScriptRoot\Functions\Add-AccessPackage.ps1"
 . "$PSScriptRoot\Functions\Ensure-AccessPackage.ps1"
 
+. "$PSScriptRoot\Functions\Get-GroupTemplates.ps1"
 . "$PSScriptRoot\Functions\Get-AccessPackagePolicy.ps1"
 . "$PSScriptRoot\Functions\Get-RequestorGroup.ps1"
 . "$PSScriptRoot\Functions\Get-ApproverGroup.ps1"

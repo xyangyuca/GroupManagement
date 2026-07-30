@@ -4,7 +4,8 @@ param(
     [ValidateSet("Partner","Filer")]
     [string]$PartnerFiler,
 
-    [bool]$Simulate = $true
+    [bool]$Simulate = $true,
+    [switch]$Cascade
 )
 
 # ==========================================
@@ -166,7 +167,7 @@ try {
             $result =
                 Ensure-AccessPackageDeleted `
                     -DisplayName $accessPackageName `
-                    -Simulate $Simulate
+                    -Simulate $Simulate -Cascade:$Cascade
 
             $results.Add(
                 [PSCustomObject]@{

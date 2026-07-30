@@ -34,16 +34,21 @@ function Ensure-AccessPackagePolicy {
             -Template $Config.AccessPackagePolicies.DescriptionTemplate `
             -Tokens $tokens
 
+    $groupTemplates =
+    Get-GroupTemplates `
+        -PartnerFiler $PartnerFiler `
+        -Config $Config
+
     $requestorGroupName =
-        Resolve-Template `
-            -Template $Config.RequestorGroups.DisplayNameTemplate `
-            -Tokens $tokens
+    Resolve-Template `
+        -Template $groupTemplates.RequestorTemplate `
+        -Tokens $tokens
 
     $approverGroupName =
-        Resolve-Template `
-            -Template $Config.ApproverGroups.DisplayNameTemplate `
-            -Tokens $tokens
-
+    Resolve-Template `
+        -Template $groupTemplates.ApproverTemplate `
+        -Tokens $tokens
+    
     Write-Log -Message "Policy Name: $policyName"
 
     $requestorGroup =

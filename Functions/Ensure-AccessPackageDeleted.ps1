@@ -2,7 +2,8 @@ function Ensure-AccessPackageDeleted {
 
     param(
         [string]$DisplayName,
-        [bool]$Simulate
+        [bool]$Simulate,
+        [switch]$Cascade
     )
 
     $existingPackage =
@@ -19,16 +20,38 @@ function Ensure-AccessPackageDeleted {
         }
     }
 
-    $policies = Get-AccessPackagePolicies -AccessPackageId $existingPackage.Id
+    $policies =
+        Get-AccessPackagePolicies `
+            -AccessPackageId $existingPackage.Id
 
     if ($policies.Count -gt 0) {
 
-        return @{
-            Action          = "Skipped"
-            Status          = "Success"
-            Message         = "Access Package has assignment policies and cannot be deleted"
-            AccessPackageId = $existingPackage.Id
-            PolicyCount     = $policies.Count
+        if (-not $Cascade) {
+
+            return @{
+                Action          = "Skipped"
+                Status          = "Success"
+                Message         = "Access Package has assignment policies and cannot be deleted. Use -Cascade to remove policies first."
+                AccessPackageId = $existingPackage.Id
+                PolicyCount     = $policies.Count
+            }
+        }
+
+        if ($Simulate) {
+
+            return @{
+                Action          = "Simulated"
+                Status          = "Success"
+                Message         = "Would delete $($policies.Count) assignment policies and then delete Access Package"
+                AccessPackageId = $existingPackage.Id
+                PolicyCount     = $policies.Count
+            }
+        }
+
+        foreach ($policy in $policies) {
+
+            Remove-MgEntitlementManagementAssignmentPolicy `
+                -AccessPackageAssignmentPolicyId $policy.Id
         }
     }
 
@@ -49,7 +72,12 @@ function Ensure-AccessPackageDeleted {
     return @{
         Action          = "Deleted"
         Status          = "Success"
-        Message         = "Access Package deleted"
+        Message         = if ($Cascade) {
+            "Access Package and associated policies deleted"
+        }
+        else {
+            "Access Package deleted"
+        }
         AccessPackageId = $existingPackage.Id
         PolicyCount     = 0
     }

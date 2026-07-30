@@ -62,16 +62,20 @@ function Ensure-AccessPackage {
         #
         # Validate package belongs to expected catalog
         #
-        if ($existingPackage.Catalog.Id -ne $Catalog.Id) {
 
-            return @{
-                Action          = "Failed"
-                Status          = "Failed"
-                PolicyEligible  = $false
-                Message         = "Access Package name exists in a different catalog"
-                AccessPackageId = $existingPackage.Id
-            }
-        }
+        #$localId = $existingPackage.Catalog.Id
+        #$catId = $Catalog.Id
+        #if ($existingPackage.Catalog.Id -ne $Catalog.Id) {
+            #Write-Host "localId: $localId"
+            #Write-Host "CatalogID: $catId"
+            #return @{
+            #    Action          = "Failed"
+            #    Status          = "Failed"
+            #    PolicyEligible  = $false
+            #    Message         = "Access Package name exists in a different catalog"
+            #    AccessPackageId = $existingPackage.Id
+            #}
+        #}
 
         #
         # Check whether the resource assignment already exists
