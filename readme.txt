@@ -7,4 +7,10 @@
 .\AccessPackageManagement.ps1 -Environment RDEV -PartnerFiler Partner -Simulate $true
 
 .\AccessPackageDeletion.ps1 -Environment RDEV -PartnerFiler Partner -Simulate $true
+
+.\AppRegGroupManagement.ps1 -Environment PROD -PartnerFiler Filer -AppName "DCS-EntitlementManagement-Automation-Prod" -Simulate $true
+
+.\AppRegGroupManagement.ps1 -Environment RDEV -PartnerFiler Partner -AppName "DCS-EntitlementManagement-Automation-Prod" -Simulate $false
+
+.\AppRegGroupRemoval.ps1 -Environment PROD  -PartnerFiler Filer   -AppName "DCS-EntitlementManagement-Automation-Prod"     -Simulate $false
 dcs_rdh_group_mgt
