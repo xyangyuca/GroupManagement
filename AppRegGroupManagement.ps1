@@ -12,6 +12,7 @@ param(
     [bool]$Simulate = $true
 )
 
+Import-Module MSAL.PS
 Import-Module Microsoft.Graph.Authentication
 Import-Module Microsoft.Graph.Applications
 Import-Module Microsoft.Graph.Groups
