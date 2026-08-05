@@ -19,7 +19,7 @@ function Ensure-AppRoleRemoval {
 
     try {
 
-        $existingAssignment =
+        $assignments =
             Get-MgServicePrincipalAppRoleAssignedTo `
                 -ServicePrincipalId $ServicePrincipalId `
                 -All |
@@ -27,7 +27,7 @@ function Ensure-AppRoleRemoval {
                 $_.PrincipalId -eq $GroupId
             }
 
-        if (-not $existingAssignment) {
+        if (-not $assignments) {
 
             return [PSCustomObject]@{
                 ApplicationName    = $ApplicationName
@@ -35,7 +35,7 @@ function Ensure-AppRoleRemoval {
                 EntraGroupObjectId = $GroupId
                 Action             = 'Skipped'
                 Status             = 'NotAssigned'
-                Message            = 'Group is not assigned to application'
+                Message            = 'Group not assigned to application'
             }
         }
 
@@ -51,13 +51,13 @@ function Ensure-AppRoleRemoval {
             }
         }
 
-    foreach ($assignment in $existingAssignments) {
+        foreach ($assignment in $assignments) {
 
-    Remove-MgServicePrincipalAppRoleAssignedTo `
-        -ServicePrincipalId $ServicePrincipalId `
-        -AppRoleAssignmentId $assignment.Id `
-        -ErrorAction Stop
-}
+            Remove-MgServicePrincipalAppRoleAssignedTo `
+                -ServicePrincipalId $ServicePrincipalId `
+                -AppRoleAssignmentId $assignment.Id `
+                -ErrorAction Stop
+        }
 
         return [PSCustomObject]@{
             ApplicationName    = $ApplicationName
