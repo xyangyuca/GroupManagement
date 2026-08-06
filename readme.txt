@@ -13,4 +13,10 @@
 .\AppRegGroupManagement.ps1 -Environment RDEV -PartnerFiler Partner -AppName "DCS-EntitlementManagement-Automation-Prod" -Simulate $false
 
 .\AppRegGroupRemoval.ps1 -Environment PROD  -PartnerFiler Filer   -AppName "DCS-EntitlementManagement-Automation-Prod"     -Simulate $false
+
+.\GroupMembershipManagement.ps1 -Environment RDEV -PartnerFiler Partner -TargetGroupName "SG-DCS-Approved-Users" -Simulate $true
+
+.\GroupMembershipRemoval.ps1 -Environment RDEV  -PartnerFiler Partner -TargetGroupName "SG-DCS-Test-Container" -Simulate $false
+
+.\GenerateGroupFile.ps1 -Environment RDEV -PartnerFiler Partner
 dcs_rdh_group_mgt
